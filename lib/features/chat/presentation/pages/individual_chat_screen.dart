@@ -6,6 +6,7 @@ import '../../../../injection_container.dart';
 import '../../data/repositories/message_repository_impl.dart';
 import '../../domain/usecases/get_messages_for_chat.dart';
 import '../../domain/usecases/send_message.dart';
+import '../../domain/usecases/save_message.dart';
 import '../bloc/chat/chat_bloc.dart';
 import '../widgets/individual_chat_screen_widget/chat_app_bar.dart';
 import '../widgets/individual_chat_screen_widget/chat_input_area.dart';
@@ -47,6 +48,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     _bloc = ChatBloc(
       getMessages: GetMessagesForChat(_repository),
       sendMessage: SendMessage(_repository),
+      saveMessage: SaveMessage(_repository),
       messagesStream: _repository.messages,
       statusStream: _repository.connectionStatus,
       userId: 'user',

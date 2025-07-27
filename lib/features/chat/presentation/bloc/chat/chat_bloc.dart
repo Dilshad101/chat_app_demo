@@ -7,6 +7,7 @@ import '../../../../../core/network/websocket_service.dart';
 import '../../../data/models/chat_message.dart';
 import '../../../domain/usecases/get_messages_for_chat.dart';
 import '../../../domain/usecases/send_message.dart';
+import '../../../domain/usecases/save_message.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
@@ -14,6 +15,7 @@ part 'chat_state.dart';
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final GetMessagesForChat getMessages;
   final SendMessage sendMessage;
+  final SaveMessage saveMessage;
   final Stream<String> messagesStream;
   final Stream<WsConnectionStatus> statusStream;
   final String userId;
@@ -25,6 +27,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc({
     required this.getMessages,
     required this.sendMessage,
+    required this.saveMessage,
     required this.messagesStream,
     required this.statusStream,
     required this.userId,
@@ -82,7 +85,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(messages: _updateTickStatuses(msgs)));
   }
 
-  void _onIncoming(_IncomingMessage event, Emitter<ChatState> emit) {
+  Future<void> _onIncoming(_IncomingMessage event, Emitter<ChatState> emit) async {
+    final chatMessage = ChatMessage(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      senderId: contactId,
+      receiverId: userId,
+      message: event.text,
+      timestamp: DateTime.now(),
+    );
+    await saveMessage(chatMessage);
+
     final msg = Message(
       text: event.text,
       isSent: false,
