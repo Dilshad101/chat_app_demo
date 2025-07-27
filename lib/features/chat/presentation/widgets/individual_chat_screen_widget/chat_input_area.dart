@@ -4,11 +4,13 @@ import 'send_button.dart';
 class ChatInputArea extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSendMessage;
+  final ValueChanged<String>? onChanged;
 
   const ChatInputArea({
     Key? key,
     required this.controller,
     required this.onSendMessage,
+    this.onChanged,
   }) : super(key: key);
 
   @override
@@ -37,6 +39,7 @@ class ChatInputArea extends StatelessWidget {
                         hintStyle: TextStyle(color: Colors.grey[600]),
                         border: InputBorder.none,
                       ),
+                      onChanged: onChanged,
                       onSubmitted: (_) => onSendMessage(),
                     ),
                   ),

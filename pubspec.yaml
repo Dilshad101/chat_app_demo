@@ -42,9 +42,16 @@ dependencies:
   http: ^1.4.0
   json_annotation: ^4.9.0
   bloc: ^9.0.0
+  flutter_bloc: ^9.1.1
+  cached_network_image: ^3.4.1
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  bloc_test: 
+  mocktail: 
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to

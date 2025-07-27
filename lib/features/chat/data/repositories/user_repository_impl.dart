@@ -34,10 +34,17 @@ class UsersRepostoryImpl implements UserRepository {
     if (await networkInfo.isConnected) {
       try {
         final users = await getUsers();
-        localDataSource.getAllCachedUserProfile();
+        for (final user in users.users) {
+          await localDataSource.cacheUserProfile(user);
+        }
         return Right(users);
       } on ServerException {
-        return Left(ServerFailure());
+        try {
+          final users = await localDataSource.getAllCachedUserProfile();
+          return Right(UsersListingModel(users: users));
+        } on CacheException {
+          return Left(ServerFailure());
+        }
       }
     } else {
       try {

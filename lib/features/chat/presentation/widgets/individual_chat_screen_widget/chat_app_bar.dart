@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../chat_screen_widgets/chat_avatar.dart';
+import '../chat_screen_widgets/connection_status.dart';
+import '../../../../../core/network/websocket_service.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String contactName;
   final String contactAvatar;
+  final WsConnectionStatus status;
 
   const ChatAppBar({
     super.key,
     required this.contactName,
     required this.contactAvatar,
+    required this.status,
   });
 
   @override
@@ -40,6 +44,12 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
+      actions: [
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: ConnectionStatus(status: status),
+        )
+      ],
     );
   }
 

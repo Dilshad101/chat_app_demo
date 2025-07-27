@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/network/websocket_service.dart';
+import '../../../../injection_container.dart';
+import '../../data/repositories/message_repository_impl.dart';
+import '../../domain/usecases/get_messages_for_chat.dart';
+import '../../domain/usecases/send_message.dart';
+import '../bloc/chat/chat_bloc.dart';
 import '../widgets/individual_chat_screen_widget/chat_app_bar.dart';
 import '../widgets/individual_chat_screen_widget/chat_input_area.dart';
 import '../widgets/individual_chat_screen_widget/chat_messages_list.dart';
@@ -8,156 +15,97 @@ import '../widgets/individual_chat_screen_widget/message.dart';
 class IndividualChatScreen extends StatefulWidget {
   final String contactName;
   final String contactAvatar;
+  final int contactId;
+  final WebSocketService? webSocketService;
 
   const IndividualChatScreen({
     super.key,
     required this.contactName,
     required this.contactAvatar,
+    required this.contactId,
+    this.webSocketService,
   });
 
   @override
-  _IndividualChatScreenState createState() => _IndividualChatScreenState();
+  State<IndividualChatScreen> createState() => _IndividualChatScreenState();
 }
 
 class _IndividualChatScreenState extends State<IndividualChatScreen> {
   final TextEditingController _messageController = TextEditingController();
-  final List<Message> _messages = [];
-  int _messageCounter = 0;
-
-  final List<String> _responses = [
-    "That's a great question! Let me think about that for a moment.",
-    "I'd be happy to help you with that. Here's what I think...",
-    "I can definitely assist you with this.",
-    "That's a wonderful idea! Let me break this down for you.",
-    "I understand what you're looking for. Here's my suggestion...",
-    "Perfect! I have some thoughts on this topic.",
-    "Great choice! Let me walk you through this step by step.",
-  ];
+  late ChatBloc _bloc;
+  late MessageRepositoryImpl _repository;
+  late WebSocketService _wsService;
 
   @override
   void initState() {
     super.initState();
-    _initializeChat();
+    _wsService = widget.webSocketService ?? locator<WebSocketService>();
+    _repository = MessageRepositoryImpl(
+      localDataSource: locator(),
+      webSocketService: _wsService,
+    );
+    _bloc = ChatBloc(
+      getMessages: GetMessagesForChat(_repository),
+      sendMessage: SendMessage(_repository),
+      messagesStream: _repository.messages,
+      statusStream: _repository.connectionStatus,
+      userId: 'user',
+      contactId: widget.contactId.toString(),
+    );
+    _repository.connect();
+    _bloc.add(const ChatStarted());
   }
 
-  void _initializeChat() {
-    _messages.addAll([
-      Message(
-        text: "Hello! I'm Claude, your AI assistant. How can I help you today?",
-        isSent: false,
-        time: "2:30 PM",
-        tickStatus: TickStatus.none,
-      ),
-      Message(
-        text: "Hi there! Can you help me with some coding questions?",
-        isSent: true,
-        time: "2:31 PM",
-        tickStatus: TickStatus.blue,
-      ),
-      Message(
-        text: "I'm working on a Flutter project",
-        isSent: true,
-        time: "2:31 PM",
-        tickStatus: TickStatus.blue,
-      ),
-      Message(
-        text: "Can you review my code?",
-        isSent: true,
-        time: "2:32 PM",
-        tickStatus: TickStatus.blue,
-      ),
-      Message(
-        text:
-            "Absolutely! I'd be happy to help you with Flutter. What specific part of your project are you working on?",
-        isSent: false,
-        time: "2:32 PM",
-        tickStatus: TickStatus.none,
-      ),
-    ]);
-    _messageCounter = _messages.where((m) => m.isSent).length;
-  }
-
-  void _sendMessage() {
+  void _onSendMessage() {
     if (_messageController.text.trim().isEmpty) return;
-
-    setState(() {
-      _messages.add(
-        Message(
-          text: _messageController.text.trim(),
-          isSent: true,
-          time: _getCurrentTime(),
-          tickStatus: TickStatus.single,
-        ),
-      );
-      _messageCounter++;
-      _updateTickStatuses();
-    });
-
+    _bloc.add(ChatMessageSent(_messageController.text.trim()));
     _messageController.clear();
-
-    // Simulate AI response
-    Future.delayed(Duration(seconds: 1), () {
-      setState(() {
-        _messages.add(
-          Message(
-            text: _responses[DateTime.now().millisecond % _responses.length],
-            isSent: false,
-            time: _getCurrentTime(),
-            tickStatus: TickStatus.none,
-          ),
-        );
-        _updateTickStatuses();
-      });
-    });
   }
 
-  void _updateTickStatuses() {
-    List<Message> sentMessages = _messages.where((m) => m.isSent).toList();
-    for (int i = 0; i < sentMessages.length; i++) {
-      Message message = sentMessages[i];
-      int messageIndex = _messages.indexOf(message);
-
-      if (i == sentMessages.length - 1) {
-        _messages[messageIndex] = message.copyWith(
-          tickStatus: TickStatus.single,
-        );
-      } else if (i == sentMessages.length - 2) {
-        _messages[messageIndex] = message.copyWith(
-          tickStatus: TickStatus.double,
-        );
-      } else {
-        _messages[messageIndex] = message.copyWith(tickStatus: TickStatus.blue);
-      }
-    }
-  }
-
-  String _getCurrentTime() {
-    DateTime now = DateTime.now();
-    return "${now.hour}:${now.minute.toString().padLeft(2, '0')}";
+  void _onTyping(String text) {
+    _wsService.send('__typing__');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFF8F9FA),
-      appBar: ChatAppBar(
-        contactName: widget.contactName,
-        contactAvatar: widget.contactAvatar,
-      ),
-      body: Column(
-        children: [
-          Expanded(child: ChatMessagesList(messages: _messages)),
-          ChatInputArea(
-            controller: _messageController,
-            onSendMessage: _sendMessage,
-          ),
-        ],
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocBuilder<ChatBloc, ChatState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFF8F9FA),
+            appBar: ChatAppBar(
+              contactName: widget.contactName,
+              contactAvatar: widget.contactAvatar,
+              status: state.status,
+            ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Expanded(child: ChatMessagesList(messages: state.messages)),
+                  if (state.showTyping)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text('${widget.contactName} is typing...'),
+                    ),
+                  ChatInputArea(
+                    controller: _messageController,
+                    onSendMessage: _onSendMessage,
+                    onChanged: _onTyping,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   @override
   void dispose() {
+    _bloc.close();
+    _repository.disconnect();
     _messageController.dispose();
     super.dispose();
   }

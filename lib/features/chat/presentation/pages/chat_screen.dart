@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/websocket_service.dart';
+import '../../../../injection_container.dart';
+import '../bloc/chat/connection_cubit.dart';
+import '../bloc/bloc/fetch_all_users_bloc.dart';
 import '../widgets/chat_screen_widgets/chat_header.dart';
 import '../widgets/chat_screen_widgets/chat_list_items.widget.dart';
+import '../widgets/chat_screen_widgets/connection_status.dart';
 import 'individual_chat_screen.dart';
+import 'dart:async';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -12,134 +18,95 @@ class ChatScreen extends StatefulWidget {
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  bool isConnected = true;
-  ChatItem? selectedChat;
+  late ConnectionCubit _connectionCubit;
 
-  final List<ChatItem> chatList = [
-    ChatItem(
-      id: 1,
-      name: "Loretta Russell",
-      message: "Hey did you see how hungry my...",
-      time: "9:41 AM",
-      avatar: "LR",
-      online: true,
-      pendingCount: 0,
-    ),
-    ChatItem(
-      id: 2,
-      name: "Nina Greer",
-      message:
-          "I don't think I can join you later on the afternoon since we are meaning...",
-      time: "9:35 AM",
-      avatar: "NG",
-      online: true,
-      pendingCount: 2,
-    ),
-    ChatItem(
-      id: 3,
-      name: "Rose Carr",
-      message: "I think our conversation has become...",
-      time: "9:30 AM",
-      avatar: "RC",
-      online: false,
-      pendingCount: 0,
-    ),
-    ChatItem(
-      id: 4,
-      name: "Manuel Clayton",
-      message: "Can we meet on wednesday night and discuss about new book...",
-      time: "Yesterday",
-      avatar: "MC",
-      online: false,
-      pendingCount: 1,
-    ),
-    ChatItem(
-      id: 5,
-      name: "Dev Team Alja",
-      message:
-          "Santiago: When do you want a discussion about our current progress?",
-      time: "Yesterday",
-      avatar: "TA",
-      online: true,
-      pendingCount: 5,
-    ),
-    ChatItem(
-      id: 6,
-      name: "Rosetta Roberts",
-      message:
-          "Wow, I don't know. So, yesterday at the club there's was a big vibe.",
-      time: "Yesterday",
-      avatar: "RR",
-      online: true,
-      pendingCount: 0,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _connectionCubit = ConnectionCubit(locator<WebSocketService>());
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Main Content
-          SafeArea(
-            child: Column(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Main Content
+            Column(
               children: [
                 // App Header
-                AppHeader(isConnected: isConnected),
+                const AppHeader(),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: BlocBuilder<ConnectionCubit, WsConnectionStatus>(
+                    bloc: _connectionCubit,
+                    builder: (_, status) => ConnectionStatus(status: status),
+                  ),
+                ),
 
                 // Chat List
                 Expanded(
-                  child: ListView.separated(
-                    itemCount: chatList.length,
-                    separatorBuilder: (context, index) =>
-                        Divider(height: 1, color: Colors.grey.shade100),
-                    itemBuilder: (context, index) {
-                      final chat = chatList[index];
-                      return ChatListItem(
-                        chat: chat,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return IndividualChatScreen(
-                                  contactName: chat.name,
-                                  contactAvatar: chat.avatar,
+                  child: BlocBuilder<UserBloc, UserState>(
+                    builder: (context, state) {
+                      if (state is UserLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is UserLoaded) {
+                        final users = state.usersListing.users;
+                        return ListView.separated(
+                          itemCount: users.length,
+                          separatorBuilder: (context, index) =>
+                              Divider(height: 1, color: Colors.grey.shade100),
+                          itemBuilder: (context, index) {
+                            final user = users[index];
+                            return ChatListItem(
+                              user: user,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return IndividualChatScreen(
+                                        contactName: user.name,
+                                        contactAvatar: user.avatar,
+                                        contactId: user.id,
+                                      );
+                                    },
+                                  ),
                                 );
                               },
-                            ),
-                          );
-                        },
-                      );
+                            );
+                          },
+                        );
+                      } else if (state is UserError) {
+                        return Center(child: Text(state.message));
+                      } else {
+                        return const SizedBox();
+                      }
                     },
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _connectionCubit.close();
+    super.dispose();
   }
 }
 
 class ChatItem {
   final int id;
   final String name;
-  final String message;
-  final String time;
-  final String avatar;
-  final bool online;
-  final int pendingCount;
 
-  ChatItem({
-    required this.id,
-    required this.name,
-    required this.message,
-    required this.time,
-    required this.avatar,
-    required this.online,
-    required this.pendingCount,
-  });
+  final String avatar;
+
+  ChatItem({required this.id, required this.name, required this.avatar});
 }

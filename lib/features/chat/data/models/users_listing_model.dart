@@ -9,12 +9,25 @@ part 'users_listing_model.g.dart';
 class UsersListingModel extends Equatable {
   const UsersListingModel({required this.users});
   @HiveField(0)
-  final List<User>? users;
+  final List<User> users;
 
-  factory UsersListingModel.fromJson(Map<String, dynamic> json) =>
-      _$UsersListingModelFromJson(json);
+  factory UsersListingModel.fromJson(dynamic json) {
+    if (json is List) {
+      return UsersListingModel(
+          users: json
+              .map((e) => User.fromJson(e as Map<String, dynamic>))
+              .toList());
+    } else if (json is Map<String, dynamic>) {
+      return UsersListingModel(
+          users: (json['users'] as List<dynamic>)
+              .map((e) => User.fromJson(e as Map<String, dynamic>))
+              .toList());
+    } else {
+      throw Exception('Invalid json');
+    }
+  }
 
-  Map<String, dynamic> toJson() => _$UsersListingModelToJson(this);
+  Map<String, dynamic> toJson() => {'users': users};
 
   @override
   List<Object?> get props => [users];
@@ -25,22 +38,20 @@ class UsersListingModel extends Equatable {
 class User extends Equatable {
   const User({
     required this.name,
-    required this.profileImage,
+    required this.avatar,
     required this.id,
   });
   @HiveField(0)
-  final String? name;
+  final String name;
   @HiveField(1)
-  @JsonKey(name: 'profile_image')
-  final String? profileImage;
+  final String avatar;
   @HiveField(2)
-  @JsonKey(name: '_id')
-  final String id;
+  final int id;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
 
   @override
-  List<Object?> get props => [name, profileImage];
+  List<Object?> get props => [name, avatar, id];
 }
