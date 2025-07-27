@@ -41,31 +41,12 @@ class ChatListItem extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Text(
-                        chat.time,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
                     ],
                   ),
                   SizedBox(height: 4),
-                  Text(
-                    chat.message,
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
                 ],
               ),
             ),
-
-            // Pending Count Badge
-            if (chat.pendingCount > 0) ...[
-              SizedBox(width: 12),
-              PendingCountBadge(count: chat.pendingCount),
-            ],
           ],
         ),
       ),
