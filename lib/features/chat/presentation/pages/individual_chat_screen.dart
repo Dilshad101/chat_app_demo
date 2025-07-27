@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/local/local_storage.dart';
+import '../../../../core/network/websocket_service.dart';
 import '../../../../injection_container.dart';
 import '../../data/models/chat_message.dart';
 import '../widgets/individual_chat_screen_widget/chat_app_bar.dart';
@@ -11,11 +12,13 @@ import '../widgets/individual_chat_screen_widget/message.dart';
 class IndividualChatScreen extends StatefulWidget {
   final String contactName;
   final String contactAvatar;
+  final WebSocketService? webSocketService;
 
   const IndividualChatScreen({
     super.key,
     required this.contactName,
     required this.contactAvatar,
+    this.webSocketService,
   });
 
   @override
@@ -27,6 +30,9 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   final List<Message> _messages = [];
   int _messageCounter = 0;
   late HiveService hiveService;
+  late WebSocketService _wsService;
+  bool _wsConnected = false;
+  bool _showTyping = false;
 
   final List<String> _responses = [
     "That's a great question! Let me think about that for a moment.",
@@ -42,6 +48,42 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   void initState() {
     super.initState();
     hiveService = locator<HiveService>();
+    _wsService = widget.webSocketService ??
+        WebSocketService(url: 'wss://echo.websocket.events');
+    _wsService.connect();
+    _wsService.connectionStatus.listen((status) {
+      if (mounted) {
+        setState(() {
+          _wsConnected = status;
+        });
+      }
+    });
+    _wsService.messages.listen((message) {
+      if (message == '__typing__') {
+        _startTypingIndicator();
+      } else {
+        setState(() {
+          _messages.add(
+            Message(
+              text: message,
+              isSent: false,
+              time: _getCurrentTime(),
+              tickStatus: TickStatus.none,
+            ),
+          );
+          _updateTickStatuses();
+        });
+        hiveService.saveMessage(
+          ChatMessage(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            senderId: 'bot',
+            receiverId: 'user',
+            message: message,
+            timestamp: DateTime.now(),
+          ),
+        );
+      }
+    });
     _loadMessages();
     _initializeChat();
   }
@@ -125,32 +167,9 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
       ),
     );
 
+    _wsService.send(_messageController.text.trim());
+
     _messageController.clear();
-
-    // Simulate AI response
-    Future.delayed(Duration(seconds: 1), () {
-      setState(() {
-        _messages.add(
-          Message(
-            text: _responses[DateTime.now().millisecond % _responses.length],
-            isSent: false,
-            time: _getCurrentTime(),
-            tickStatus: TickStatus.none,
-          ),
-        );
-        _updateTickStatuses();
-      });
-
-      hiveService.saveMessage(
-        ChatMessage(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          senderId: 'bot',
-          receiverId: 'user',
-          message: _responses[DateTime.now().millisecond % _responses.length],
-          timestamp: DateTime.now(),
-        ),
-      );
-    });
   }
 
   void _updateTickStatuses() {
@@ -173,9 +192,26 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     }
   }
 
+  void _startTypingIndicator() {
+    setState(() {
+      _showTyping = true;
+    });
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() {
+          _showTyping = false;
+        });
+      }
+    });
+  }
+
   String _getCurrentTime() {
     DateTime now = DateTime.now();
     return "${now.hour}:${now.minute.toString().padLeft(2, '0')}";
+  }
+
+  void _onTyping(String text) {
+    _wsService.send('__typing__');
   }
 
   @override
@@ -185,13 +221,20 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
       appBar: ChatAppBar(
         contactName: widget.contactName,
         contactAvatar: widget.contactAvatar,
+        isConnected: _wsConnected,
       ),
       body: Column(
         children: [
           Expanded(child: ChatMessagesList(messages: _messages)),
+          if (_showTyping)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text('${widget.contactName} is typing...'),
+            ),
           ChatInputArea(
             controller: _messageController,
             onSendMessage: _sendMessage,
+            onChanged: _onTyping,
           ),
         ],
       ),
@@ -201,6 +244,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   @override
   void dispose() {
     _messageController.dispose();
+    _wsService.disconnect();
     super.dispose();
   }
 }

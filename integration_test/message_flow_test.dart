@@ -10,7 +10,7 @@ import 'package:chat_app_1/features/chat/data/models/users_listing_model.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('send message saved locally', (tester) async {
+  testWidgets('send and receive messages are saved locally', (tester) async {
     await Hive.initFlutter();
     Hive.registerAdapter(ChatMessageAdapter());
     Hive.registerAdapter(UsersListingModelAdapter());
@@ -28,9 +28,11 @@ void main() {
     await tester.enterText(find.byType(TextField), 'hello');
     await tester.tap(find.byIcon(Icons.send));
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
     final box = Hive.box<ChatMessage>(HiveServiceImpl.chatBoxName);
-    final exists = box.values.any((m) => m.message == 'hello');
-    expect(exists, true);
+    final sent = box.values.any((m) => m.message == 'hello' && m.senderId == 'user');
+    final received = box.values.any((m) => m.message == 'hello' && m.senderId == 'bot');
+    expect(sent && received, true);
   });
 }
