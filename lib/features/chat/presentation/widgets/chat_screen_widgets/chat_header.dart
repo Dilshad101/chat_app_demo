@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'connection_status.dart';
+import '../../../../core/network/websocket_service.dart';
 
 class AppHeader extends StatelessWidget {
-  final bool isConnected;
+  final WsConnectionStatus status;
 
-  const AppHeader({super.key, required this.isConnected});
+  const AppHeader({super.key, required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class AppHeader extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16),
-          ConnectionStatus(isConnected: isConnected),
+          ConnectionStatus(status: status),
         ],
       ),
     );
