@@ -11,8 +11,12 @@ import 'features/chat/data/datasources/number_trivia_remote_data_source.dart';
 import 'features/chat/data/models/chat_message.dart';
 import 'features/chat/data/models/users_listing_model.dart';
 import 'features/chat/data/repositories/user_repository_impl.dart';
+import 'features/chat/data/repositories/message_repository_impl.dart';
 import 'features/chat/domain/repositories/user_repository.dart';
+import 'features/chat/domain/repositories/message_repository.dart';
 import 'features/chat/domain/usecases/get_all_users_usecase.dart';
+import 'features/chat/domain/usecases/get_messages_for_chat.dart';
+import 'features/chat/domain/usecases/send_message.dart';
 import 'features/chat/presentation/bloc/bloc/fetch_all_users_bloc.dart';
 import 'core/network/websocket_service.dart';
 
@@ -45,6 +49,12 @@ Future<void> setupDependency() async {
   locator.registerLazySingleton<WebSocketService>(
     () => WebSocketService(url: 'wss://echo.websocket.events'),
   );
+  locator.registerLazySingleton<MessageRepository>(
+    () => MessageRepositoryImpl(
+      localDataSource: locator(),
+      webSocketService: locator(),
+    ),
+  );
   locator.registerLazySingleton<UserRepository>(
     () => UsersRepostoryImpl(
       remoteDataSource: locator(),
@@ -53,5 +63,7 @@ Future<void> setupDependency() async {
     ),
   );
   locator.registerLazySingleton(() => GetAllUsers(locator()));
+  locator.registerLazySingleton(() => GetMessagesForChat(locator()));
+  locator.registerLazySingleton(() => SendMessage(locator()));
   locator.registerFactory(() => UserBloc(getAllUsers: locator()));
 }

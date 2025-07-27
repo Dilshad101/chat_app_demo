@@ -1,43 +1,13 @@
-import 'package:chat_app_1/core/local/local_storage.dart';
 import 'package:chat_app_1/core/network/websocket_service.dart';
 import 'package:chat_app_1/features/chat/presentation/pages/individual_chat_screen.dart';
-import 'package:chat_app_1/features/chat/data/models/chat_message.dart';
-import 'package:chat_app_1/features/chat/data/models/users_listing_model.dart';
+import 'package:chat_app_1/features/chat/data/datasources/chat_local_data_source.dart';
 import 'package:chat_app_1/injection_container.dart';
+import 'fake_chat_local_data_source.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
-class FakeHiveService extends Fake implements HiveService {
-  final List<ChatMessage> stored = [];
-
-  @override
-  Future<void> init() async {}
-
-  @override
-  List<ChatMessage> getAllMessages() => [];
-
-  @override
-  List<ChatMessage> getMessagesForChat(String userA, String userB) => [];
-
-  @override
-  Future<void> saveMessage(ChatMessage message) async {
-    stored.add(message);
-  }
-
-  @override
-  Future<void> clearMessages() async {}
-
-  @override
-  Future<void> saveUser(User profile) async {}
-
-  @override
-  User? getUser(String userId) => null;
-
-  @override
-  Future<void> clearUsers() async {}
-}
 
 class FakeWebSocketService extends WebSocketService {
   FakeWebSocketService() : super(url: 'ws://test');
@@ -74,8 +44,8 @@ void main() {
   final locator = GetIt.instance;
 
   setUp(() {
-    if (!locator.isRegistered<HiveService>()) {
-      locator.registerSingleton<HiveService>(FakeHiveService());
+    if (!locator.isRegistered<ChatLocalDataSource>()) {
+      locator.registerSingleton<ChatLocalDataSource>(FakeChatLocalDataSource());
     }
   });
 

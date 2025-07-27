@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/websocket_service.dart';
 import '../../../../injection_container.dart';
+import '../bloc/chat/connection_cubit.dart';
 import '../bloc/bloc/fetch_all_users_bloc.dart';
 import '../widgets/chat_screen_widgets/chat_header.dart';
 import '../widgets/chat_screen_widgets/chat_list_items.widget.dart';
@@ -17,22 +18,12 @@ class ChatScreen extends StatefulWidget {
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  late WebSocketService _wsService;
-  ChatItem? selectedChat;
-  late StreamSubscription<WsConnectionStatus> _connectionSubscription;
-  WsConnectionStatus _wsStatus = WsConnectionStatus.connecting;
+  late ConnectionCubit _connectionCubit;
 
   @override
   void initState() {
     super.initState();
-    _wsService = locator<WebSocketService>();
-    _wsService.connect();
-    _connectionSubscription = _wsService.connectionStatus.listen((status) {
-      if (!mounted) return;
-      setState(() {
-        _wsStatus = status;
-      });
-    });
+    _connectionCubit = ConnectionCubit(locator<WebSocketService>());
   }
 
   @override
@@ -49,7 +40,10 @@ class ChatScreenState extends State<ChatScreen> {
                 const AppHeader(),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: ConnectionStatus(status: _wsStatus),
+                  child: BlocBuilder<ConnectionCubit, WsConnectionStatus>(
+                    bloc: _connectionCubit,
+                    builder: (_, status) => ConnectionStatus(status: status),
+                  ),
                 ),
 
                 // Chat List
@@ -103,8 +97,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _connectionSubscription.cancel();
-    _wsService.disconnect();
+    _connectionCubit.close();
     super.dispose();
   }
 }
