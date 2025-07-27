@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../../core/network/network_info.dart';
 import '../../../../injection_container.dart';
 import '../bloc/bloc/fetch_all_users_bloc.dart';
