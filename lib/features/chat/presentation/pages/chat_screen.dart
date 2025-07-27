@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/websocket_service.dart';
 import '../../../../injection_container.dart';
@@ -8,7 +8,6 @@ import '../widgets/chat_screen_widgets/chat_header.dart';
 import '../widgets/chat_screen_widgets/chat_list_items.widget.dart';
 import '../widgets/chat_screen_widgets/connection_status.dart';
 import 'individual_chat_screen.dart';
-import 'dart:async';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
