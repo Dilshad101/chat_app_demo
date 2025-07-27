@@ -5,11 +5,13 @@ import '../chat_screen_widgets/chat_avatar.dart';
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String contactName;
   final String contactAvatar;
+  final bool isConnected;
 
   const ChatAppBar({
     super.key,
     required this.contactName,
     required this.contactAvatar,
+    required this.isConnected,
   });
 
   @override
@@ -40,6 +42,16 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
+      actions: [
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: Icon(
+            Icons.circle,
+            color: isConnected ? Colors.green : Colors.red,
+            size: 12,
+          ),
+        )
+      ],
     );
   }
 

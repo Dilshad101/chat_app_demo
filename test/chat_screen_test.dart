@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:chat_app_1/core/network/network_info.dart';
+import 'package:chat_app_1/injection_container.dart';
 
 class MockUserBloc extends MockBloc<UserEvent, UserState> implements UserBloc {}
 
@@ -13,8 +16,14 @@ class FakeUserEvent extends Fake implements UserEvent {}
 
 class FakeUserState extends Fake implements UserState {}
 
+class FakeNetworkInfo extends Fake implements NetworkInfo {
+  @override
+  Future<bool> get isConnected async => true;
+}
+
 void main() {
   setUpAll(() {
+    locator.registerSingleton<NetworkInfo>(FakeNetworkInfo());
     registerFallbackValue(FakeUserEvent());
     registerFallbackValue(FakeUserState());
   });
