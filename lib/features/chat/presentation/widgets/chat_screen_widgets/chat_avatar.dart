@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ChatAvatar extends StatelessWidget {
@@ -31,22 +32,12 @@ class ChatAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: getAvatarColor(name),
         shape: BoxShape.circle,
       ),
-      child: Center(
-        child: Text(
-          avatar,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-            fontSize: fontSize,
-          ),
-        ),
-      ),
+      child: Center(child: Image.network(avatar)),
     );
   }
 }
-
-

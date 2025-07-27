@@ -18,10 +18,7 @@ class ChatListItem extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            ChatAvatar(
-              avatar: user?.profileImage ?? '',
-              name: user?.name ?? '',
-            ),
+            ChatAvatar(avatar: user?.avatar ?? '', name: user?.name ?? ''),
             SizedBox(width: 12),
 
             // Chat Content

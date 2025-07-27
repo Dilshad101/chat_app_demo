@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../injection_container.dart';
-import '../../../core/network/network_info.dart';
-import '../../data/models/users_listing_model.dart';
+import '../../../../core/network/network_info.dart';
+import '../../../../injection_container.dart';
 import '../bloc/bloc/fetch_all_users_bloc.dart';
 import '../widgets/chat_screen_widgets/chat_header.dart';
 import '../widgets/chat_screen_widgets/chat_list_items.widget.dart';

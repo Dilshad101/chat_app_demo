@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:data_connection_checker_tv/data_connection_checker.dart';
 
@@ -28,19 +29,25 @@ Future<void> setupDependency() async {
   locator.registerLazySingleton(() => http.Client());
   locator.registerLazySingleton(() => DataConnectionChecker());
   locator.registerLazySingleton<NetworkInfo>(
-      () => NetworkInfoImpl(locator<DataConnectionChecker>()));
+    () => NetworkInfoImpl(locator<DataConnectionChecker>()),
+  );
 
-  locator.registerLazySingleton<ChatLocalDataSource>(() => ChatLocalDataSourceImpl(
-        chatBox: Hive.box<ChatMessage>(HiveServiceImpl.chatBoxName),
-        userBox: Hive.box<User>(HiveServiceImpl.userBoxName),
-      ));
+  locator.registerLazySingleton<ChatLocalDataSource>(
+    () => ChatLocalDataSourceImpl(
+      chatBox: Hive.box<ChatMessage>(HiveServiceImpl.chatBoxName),
+      userBox: Hive.box<User>(HiveServiceImpl.userBoxName),
+    ),
+  );
   locator.registerLazySingleton<ChatRemoteDataSource>(
-      () => ChatRemoteDataSourceImpl(client: locator()));
-  locator.registerLazySingleton<UserRepository>(() => UsersRepostoryImpl(
-        remoteDataSource: locator(),
-        localDataSource: locator(),
-        networkInfo: locator(),
-      ));
+    () => ChatRemoteDataSourceImpl(client: locator()),
+  );
+  locator.registerLazySingleton<UserRepository>(
+    () => UsersRepostoryImpl(
+      remoteDataSource: locator(),
+      localDataSource: locator(),
+      networkInfo: locator(),
+    ),
+  );
   locator.registerLazySingleton(() => GetAllUsers(locator()));
   locator.registerFactory(() => UserBloc(getAllUsers: locator()));
 }

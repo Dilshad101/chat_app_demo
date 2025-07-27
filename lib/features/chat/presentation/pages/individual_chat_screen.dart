@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../injection_container.dart';
-import '../../../core/local/local_storage.dart';
+import '../../../../core/local/local_storage.dart';
+import '../../../../injection_container.dart';
 import '../../data/models/chat_message.dart';
 import '../widgets/individual_chat_screen_widget/chat_app_bar.dart';
 import '../widgets/individual_chat_screen_widget/chat_input_area.dart';
