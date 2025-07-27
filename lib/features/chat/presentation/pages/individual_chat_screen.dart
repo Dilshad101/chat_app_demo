@@ -14,12 +14,14 @@ import '../widgets/individual_chat_screen_widget/message.dart';
 class IndividualChatScreen extends StatefulWidget {
   final String contactName;
   final String contactAvatar;
+  final int contactId;
   final WebSocketService? webSocketService;
 
   const IndividualChatScreen({
     super.key,
     required this.contactName,
     required this.contactAvatar,
+    required this.contactId,
     this.webSocketService,
   });
 
@@ -53,6 +55,9 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     _messagesSubscription = _wsService.messages.listen((message) {
       if (message == '__typing__') {
         _startTypingIndicator();
+      } else if (message.contains('sponsored by Lob.com')) {
+        // ignore server welcome message
+        return;
       } else {
         if (!mounted) return;
         setState(() {
@@ -69,7 +74,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
         hiveService.saveMessage(
           ChatMessage(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
-            senderId: 'bot',
+            senderId: widget.contactId.toString(),
             receiverId: 'user',
             message: message,
             timestamp: DateTime.now(),
@@ -81,7 +86,8 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   }
 
   void _loadMessages() {
-    final cached = hiveService.getAllMessages();
+    final cached = hiveService.getMessagesForChat(
+        'user', widget.contactId.toString());
     for (final m in cached) {
       _messages.add(
         Message(
@@ -116,7 +122,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
       ChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         senderId: 'user',
-        receiverId: 'bot',
+        receiverId: widget.contactId.toString(),
         message: _messageController.text.trim(),
         timestamp: DateTime.now(),
       ),
