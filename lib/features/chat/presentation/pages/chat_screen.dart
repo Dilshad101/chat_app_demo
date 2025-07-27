@@ -32,11 +32,11 @@ class ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Main Content
-          SafeArea(
-            child: Column(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Main Content
+            Column(
               children: [
                 // App Header
                 AppHeader(isConnected: isConnected),
@@ -83,8 +83,8 @@ class ChatScreenState extends State<ChatScreen> {
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

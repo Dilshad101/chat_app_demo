@@ -34,21 +34,12 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   bool _wsConnected = false;
   bool _showTyping = false;
 
-  final List<String> _responses = [
-    "That's a great question! Let me think about that for a moment.",
-    "I'd be happy to help you with that. Here's what I think...",
-    "I can definitely assist you with this.",
-    "That's a wonderful idea! Let me break this down for you.",
-    "I understand what you're looking for. Here's my suggestion...",
-    "Perfect! I have some thoughts on this topic.",
-    "Great choice! Let me walk you through this step by step.",
-  ];
-
   @override
   void initState() {
     super.initState();
     hiveService = locator<HiveService>();
-    _wsService = widget.webSocketService ??
+    _wsService =
+        widget.webSocketService ??
         WebSocketService(url: 'wss://echo.websocket.events');
     _wsService.connect();
     _wsService.connectionStatus.listen((status) {
@@ -85,7 +76,6 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
       }
     });
     _loadMessages();
-    _initializeChat();
   }
 
   void _loadMessages() {
@@ -101,43 +91,6 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
         ),
       );
     }
-    _messageCounter = _messages.where((m) => m.isSent).length;
-  }
-
-  void _initializeChat() {
-    _messages.addAll([
-      Message(
-        text: "Hello! I'm Claude, your AI assistant. How can I help you today?",
-        isSent: false,
-        time: "2:30 PM",
-        tickStatus: TickStatus.none,
-      ),
-      Message(
-        text: "Hi there! Can you help me with some coding questions?",
-        isSent: true,
-        time: "2:31 PM",
-        tickStatus: TickStatus.blue,
-      ),
-      Message(
-        text: "I'm working on a Flutter project",
-        isSent: true,
-        time: "2:31 PM",
-        tickStatus: TickStatus.blue,
-      ),
-      Message(
-        text: "Can you review my code?",
-        isSent: true,
-        time: "2:32 PM",
-        tickStatus: TickStatus.blue,
-      ),
-      Message(
-        text:
-            "Absolutely! I'd be happy to help you with Flutter. What specific part of your project are you working on?",
-        isSent: false,
-        time: "2:32 PM",
-        tickStatus: TickStatus.none,
-      ),
-    ]);
     _messageCounter = _messages.where((m) => m.isSent).length;
   }
 
@@ -223,20 +176,22 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
         contactAvatar: widget.contactAvatar,
         isConnected: _wsConnected,
       ),
-      body: Column(
-        children: [
-          Expanded(child: ChatMessagesList(messages: _messages)),
-          if (_showTyping)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text('${widget.contactName} is typing...'),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(child: ChatMessagesList(messages: _messages)),
+            if (_showTyping)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text('${widget.contactName} is typing...'),
+              ),
+            ChatInputArea(
+              controller: _messageController,
+              onSendMessage: _sendMessage,
+              onChanged: _onTyping,
             ),
-          ChatInputArea(
-            controller: _messageController,
-            onSendMessage: _sendMessage,
-            onChanged: _onTyping,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
