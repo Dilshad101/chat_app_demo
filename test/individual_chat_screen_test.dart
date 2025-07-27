@@ -98,7 +98,9 @@ void main() {
     expect(ws.sent, contains('hi'));
   });
 
-  testWidgets('shows typing indicator on incoming typing event', (tester) async {
+  testWidgets('shows typing indicator on incoming typing event', (
+    tester,
+  ) async {
     final ws = FakeWebSocketService();
     await tester.pumpWidget(
       MaterialApp(
