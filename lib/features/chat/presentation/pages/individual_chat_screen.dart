@@ -39,13 +39,12 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     super.initState();
     hiveService = locator<HiveService>();
     _wsService =
-        widget.webSocketService ??
-        WebSocketService(url: 'wss://echo.websocket.events');
+        widget.webSocketService ?? locator<WebSocketService>();
     _wsService.connect();
     _wsService.connectionStatus.listen((status) {
       if (mounted) {
         setState(() {
-          _wsConnected = status;
+          _wsConnected = status == WsConnectionStatus.connected;
         });
       }
     });

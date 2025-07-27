@@ -40,17 +40,18 @@ class FakeWebSocketService extends WebSocketService {
   FakeWebSocketService() : super(url: 'ws://test');
   final List<String> sent = [];
   final StreamController<String> _controller = StreamController.broadcast();
-  final StreamController<bool> _status = StreamController<bool>.broadcast();
+  final StreamController<WsConnectionStatus> _status =
+      StreamController<WsConnectionStatus>.broadcast();
 
   @override
   Stream<String> get messages => _controller.stream;
 
   @override
-  Stream<bool> get connectionStatus => _status.stream;
+  Stream<WsConnectionStatus> get connectionStatus => _status.stream;
 
   @override
   void connect() {
-    _status.add(true);
+    _status.add(WsConnectionStatus.connected);
   }
 
   @override
@@ -62,7 +63,7 @@ class FakeWebSocketService extends WebSocketService {
 
   @override
   void disconnect() {
-    _status.add(false);
+    _status.add(WsConnectionStatus.disconnected);
   }
 }
 

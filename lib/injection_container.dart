@@ -14,6 +14,7 @@ import 'features/chat/data/repositories/user_repository_impl.dart';
 import 'features/chat/domain/repositories/user_repository.dart';
 import 'features/chat/domain/usecases/get_all_users_usecase.dart';
 import 'features/chat/presentation/bloc/bloc/fetch_all_users_bloc.dart';
+import 'core/network/websocket_service.dart';
 
 final locator = GetIt.instance;
 
@@ -40,6 +41,9 @@ Future<void> setupDependency() async {
   );
   locator.registerLazySingleton<ChatRemoteDataSource>(
     () => ChatRemoteDataSourceImpl(client: locator()),
+  );
+  locator.registerLazySingleton<WebSocketService>(
+    () => WebSocketService(url: 'wss://echo.websocket.events'),
   );
   locator.registerLazySingleton<UserRepository>(
     () => UsersRepostoryImpl(

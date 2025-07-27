@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:chat_app_1/core/network/network_info.dart';
+import 'package:chat_app_1/core/network/websocket_service.dart';
 import 'package:chat_app_1/injection_container.dart';
 
 class MockUserBloc extends MockBloc<UserEvent, UserState> implements UserBloc {}
@@ -16,14 +16,23 @@ class FakeUserEvent extends Fake implements UserEvent {}
 
 class FakeUserState extends Fake implements UserState {}
 
-class FakeNetworkInfo extends Fake implements NetworkInfo {
+class FakeWebSocketService extends WebSocketService {
+  FakeWebSocketService() : super(url: 'ws://test');
+  final StreamController<WsConnectionStatus> _controller =
+      StreamController<WsConnectionStatus>.broadcast();
+
   @override
-  Future<bool> get isConnected async => true;
+  Stream<WsConnectionStatus> get connectionStatus => _controller.stream;
+
+  @override
+  void connect() {
+    _controller.add(WsConnectionStatus.connected);
+  }
 }
 
 void main() {
   setUpAll(() {
-    locator.registerSingleton<NetworkInfo>(FakeNetworkInfo());
+    locator.registerSingleton<WebSocketService>(FakeWebSocketService());
     registerFallbackValue(FakeUserEvent());
     registerFallbackValue(FakeUserState());
   });

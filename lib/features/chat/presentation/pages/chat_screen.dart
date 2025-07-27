@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/network/network_info.dart';
+import '../../../../core/network/websocket_service.dart';
 import '../../../../injection_container.dart';
 import '../bloc/bloc/fetch_all_users_bloc.dart';
 import '../widgets/chat_screen_widgets/chat_header.dart';
@@ -15,17 +15,22 @@ class ChatScreen extends StatefulWidget {
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  bool isConnected = true;
+  late WebSocketService _wsService;
+  WsConnectionStatus wsStatus = WsConnectionStatus.connecting;
   ChatItem? selectedChat;
 
   @override
   void initState() {
     super.initState();
-    locator<NetworkInfo>().isConnected.then((value) {
-      setState(() {
-        isConnected = value;
-      });
+    _wsService = locator<WebSocketService>();
+    _wsService.connectionStatus.listen((status) {
+      if (mounted) {
+        setState(() {
+          wsStatus = status;
+        });
+      }
     });
+    _wsService.connect();
   }
 
   @override
@@ -39,7 +44,7 @@ class ChatScreenState extends State<ChatScreen> {
             Column(
               children: [
                 // App Header
-                AppHeader(isConnected: isConnected),
+                AppHeader(status: wsStatus),
 
                 // Chat List
                 Expanded(
