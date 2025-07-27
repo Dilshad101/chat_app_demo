@@ -10,31 +10,39 @@ class WebSocketService {
   final _messageController = StreamController<String>.broadcast();
   final _connectionController =
       StreamController<WsConnectionStatus>.broadcast();
+  WsConnectionStatus _currentStatus = WsConnectionStatus.connecting;
 
   Stream<String> get messages => _messageController.stream;
-  Stream<WsConnectionStatus> get connectionStatus =>
-      _connectionController.stream;
+  Stream<WsConnectionStatus> get connectionStatus async* {
+    yield _currentStatus;
+    yield* _connectionController.stream;
+  }
 
   WebSocketService({required this.url, this.channelFactory});
 
   void connect() {
     if (_channel != null) return;
-    _connectionController.add(WsConnectionStatus.connecting);
+    _currentStatus = WsConnectionStatus.connecting;
+    _connectionController.add(_currentStatus);
     try {
       final connect = channelFactory ??
           ((uri) => WebSocketChannel.connect(uri));
       _channel = connect(Uri.parse(url));
-      _connectionController.add(WsConnectionStatus.connected);
+      _currentStatus = WsConnectionStatus.connected;
+      _connectionController.add(_currentStatus);
       _channel!.stream.listen((event) {
         _messageController.add(event);
       }, onError: (_) {
-        _connectionController.add(WsConnectionStatus.disconnected);
+        _currentStatus = WsConnectionStatus.disconnected;
+        _connectionController.add(_currentStatus);
       }, onDone: () {
-        _connectionController.add(WsConnectionStatus.disconnected);
+        _currentStatus = WsConnectionStatus.disconnected;
+        _connectionController.add(_currentStatus);
         _channel = null;
       });
     } catch (e) {
-      _connectionController.add(WsConnectionStatus.disconnected);
+      _currentStatus = WsConnectionStatus.disconnected;
+      _connectionController.add(_currentStatus);
       _channel = null;
     }
   }
@@ -46,6 +54,7 @@ class WebSocketService {
   void disconnect() {
     _channel?.sink.close();
     _channel = null;
-    _connectionController.add(WsConnectionStatus.disconnected);
+    _currentStatus = WsConnectionStatus.disconnected;
+    _connectionController.add(_currentStatus);
   }
 }

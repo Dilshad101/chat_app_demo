@@ -7,8 +7,8 @@ class ConnectionCubit extends Cubit<WsConnectionStatus> {
   StreamSubscription<WsConnectionStatus>? _sub;
 
   ConnectionCubit(this.service) : super(WsConnectionStatus.connecting) {
-    service.connect();
     _sub = service.connectionStatus.listen(emit);
+    service.connect();
   }
 
   @override
