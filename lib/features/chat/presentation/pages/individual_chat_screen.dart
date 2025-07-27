@@ -35,7 +35,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   late WebSocketService _wsService;
   late StreamSubscription<WsConnectionStatus> _connectionSubscription;
   late StreamSubscription<String> _messagesSubscription;
-  bool _wsConnected = false;
+  WsConnectionStatus _wsStatus = WsConnectionStatus.connecting;
   bool _showTyping = false;
 
   @override
@@ -47,7 +47,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     _connectionSubscription = _wsService.connectionStatus.listen((status) {
       if (!mounted) return;
       setState(() {
-        _wsConnected = status == WsConnectionStatus.connected;
+        _wsStatus = status;
       });
     });
     _messagesSubscription = _wsService.messages.listen((message) {
@@ -176,7 +176,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
       appBar: ChatAppBar(
         contactName: widget.contactName,
         contactAvatar: widget.contactAvatar,
-        isConnected: _wsConnected,
+        status: _wsStatus,
       ),
       body: SafeArea(
         child: Column(

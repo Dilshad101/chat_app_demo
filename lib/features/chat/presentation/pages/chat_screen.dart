@@ -16,20 +16,12 @@ class ChatScreen extends StatefulWidget {
 
 class ChatScreenState extends State<ChatScreen> {
   late WebSocketService _wsService;
-  WsConnectionStatus wsStatus = WsConnectionStatus.connecting;
   ChatItem? selectedChat;
 
   @override
   void initState() {
     super.initState();
     _wsService = locator<WebSocketService>();
-    _wsService.connectionStatus.listen((status) {
-      if (mounted) {
-        setState(() {
-          wsStatus = status;
-        });
-      }
-    });
     _wsService.connect();
   }
 
@@ -44,7 +36,7 @@ class ChatScreenState extends State<ChatScreen> {
             Column(
               children: [
                 // App Header
-                AppHeader(status: wsStatus),
+                const AppHeader(),
 
                 // Chat List
                 Expanded(

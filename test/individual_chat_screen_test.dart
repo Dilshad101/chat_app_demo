@@ -89,8 +89,7 @@ void main() {
     );
     await tester.pump();
 
-    final icon = tester.widget<Icon>(find.byIcon(Icons.circle));
-    expect(icon.color, Colors.green);
+    expect(find.text('Active'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'hi');
     await tester.tap(find.byIcon(Icons.send));
