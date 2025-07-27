@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'dart:async';
+
 import '../../../../core/local/local_storage.dart';
 import '../../../../core/network/websocket_service.dart';
 import '../../../../injection_container.dart';
@@ -31,6 +33,8 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   int _messageCounter = 0;
   late HiveService hiveService;
   late WebSocketService _wsService;
+  late StreamSubscription<WsConnectionStatus> _connectionSubscription;
+  late StreamSubscription<String> _messagesSubscription;
   bool _wsConnected = false;
   bool _showTyping = false;
 
@@ -41,17 +45,17 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     _wsService =
         widget.webSocketService ?? locator<WebSocketService>();
     _wsService.connect();
-    _wsService.connectionStatus.listen((status) {
-      if (mounted) {
-        setState(() {
-          _wsConnected = status == WsConnectionStatus.connected;
-        });
-      }
+    _connectionSubscription = _wsService.connectionStatus.listen((status) {
+      if (!mounted) return;
+      setState(() {
+        _wsConnected = status == WsConnectionStatus.connected;
+      });
     });
-    _wsService.messages.listen((message) {
+    _messagesSubscription = _wsService.messages.listen((message) {
       if (message == '__typing__') {
         _startTypingIndicator();
       } else {
+        if (!mounted) return;
         setState(() {
           _messages.add(
             Message(
@@ -198,6 +202,8 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   @override
   void dispose() {
     _messageController.dispose();
+    _connectionSubscription.cancel();
+    _messagesSubscription.cancel();
     _wsService.disconnect();
     super.dispose();
   }
