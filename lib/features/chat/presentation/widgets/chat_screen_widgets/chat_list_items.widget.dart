@@ -1,14 +1,13 @@
+import 'package:chat_app_1/features/chat/data/models/users_listing_model.dart';
 import 'package:flutter/material.dart';
 
-import '../../pages/chat_screen.dart';
 import 'chat_avatar.dart';
-import 'count_widget.dart';
 
 class ChatListItem extends StatelessWidget {
-  final ChatItem chat;
+  final User? user;
   final VoidCallback onTap;
 
-  const ChatListItem({super.key, required this.chat, required this.onTap});
+  const ChatListItem({super.key, required this.user, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +18,10 @@ class ChatListItem extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            ChatAvatar(avatar: chat.avatar, name: chat.name),
+            ChatAvatar(
+              avatar: user?.profileImage ?? '',
+              name: user?.name ?? '',
+            ),
             SizedBox(width: 12),
 
             // Chat Content
@@ -32,7 +34,7 @@ class ChatListItem extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          chat.name,
+                          user?.name ?? '',
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
                             color: Colors.black,

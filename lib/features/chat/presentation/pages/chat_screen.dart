@@ -1,3 +1,4 @@
+import 'package:chat_app_1/features/chat/data/models/users_listing_model.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/chat_screen_widgets/chat_header.dart';
@@ -15,12 +16,8 @@ class ChatScreenState extends State<ChatScreen> {
   bool isConnected = true;
   ChatItem? selectedChat;
 
-  final List<ChatItem> chatList = [
-    ChatItem(id: 3, name: "Rose Carr", avatar: "RC"),
-    ChatItem(id: 4, name: "Manuel Clayton", avatar: "MC"),
-    ChatItem(id: 5, name: "Dev Team Alja", avatar: "TA"),
-    ChatItem(id: 6, name: "Rosetta Roberts", avatar: "RR"),
-  ];
+  ///TODO: fetch users from local or api
+  final UsersListingModel usersModel = UsersListingModel(users: []);
 
   @override
   Widget build(BuildContext context) {
@@ -38,21 +35,21 @@ class ChatScreenState extends State<ChatScreen> {
                 // Chat List
                 Expanded(
                   child: ListView.separated(
-                    itemCount: chatList.length,
+                    itemCount: usersModel.users?.length ?? 0,
                     separatorBuilder: (context, index) =>
                         Divider(height: 1, color: Colors.grey.shade100),
                     itemBuilder: (context, index) {
-                      final chat = chatList[index];
+                      final user = usersModel.users?[index];
                       return ChatListItem(
-                        chat: chat,
+                        user: user,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) {
                                 return IndividualChatScreen(
-                                  contactName: chat.name,
-                                  contactAvatar: chat.avatar,
+                                  contactName: user?.name ?? '',
+                                  contactAvatar: user?.profileImage ?? '',
                                 );
                               },
                             ),
