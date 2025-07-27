@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/network/websocket_service.dart';
+import '../../../../../core/network/websocket_service.dart';
 
 class ConnectionStatus extends StatelessWidget {
   final WsConnectionStatus status;
@@ -9,10 +9,7 @@ class ConnectionStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (status == WsConnectionStatus.connecting) {
-      return const Text(
-        'Connecting...',
-        style: TextStyle(fontSize: 14),
-      );
+      return const Text('Connecting...', style: TextStyle(fontSize: 14));
     }
 
     final isConnected = status == WsConnectionStatus.connected;
@@ -21,10 +18,7 @@ class ConnectionStatus extends StatelessWidget {
       children: [
         Text(
           isConnected ? 'Active' : 'Disconnected from server',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
         ),
         const SizedBox(width: 8),
         Container(

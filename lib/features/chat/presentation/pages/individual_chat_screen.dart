@@ -42,8 +42,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   void initState() {
     super.initState();
     hiveService = locator<HiveService>();
-    _wsService =
-        widget.webSocketService ?? locator<WebSocketService>();
+    _wsService = widget.webSocketService ?? locator<WebSocketService>();
     _wsService.connect();
     _connectionSubscription = _wsService.connectionStatus.listen((status) {
       if (!mounted) return;

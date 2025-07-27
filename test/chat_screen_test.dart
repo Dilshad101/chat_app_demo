@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:chat_app_1/features/chat/data/models/users_listing_model.dart';
 import 'package:chat_app_1/features/chat/presentation/bloc/bloc/fetch_all_users_bloc.dart';
@@ -39,10 +41,12 @@ void main() {
 
   testWidgets('ChatScreen displays users list', (tester) async {
     final mockBloc = MockUserBloc();
-    final users = UsersListingModel(users: [
-      const User(name: 'Jane', avatar: 'a.png', id: 1),
-      const User(name: 'John', avatar: 'b.png', id: 2),
-    ]);
+    final users = UsersListingModel(
+      users: [
+        const User(name: 'Jane', avatar: 'a.png', id: 1),
+        const User(name: 'John', avatar: 'b.png', id: 2),
+      ],
+    );
 
     whenListen(
       mockBloc,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/network/websocket_service.dart';
 import 'connection_status.dart';
-import '../../../../core/network/websocket_service.dart';
 
 class AppHeader extends StatelessWidget {
   final WsConnectionStatus status;
