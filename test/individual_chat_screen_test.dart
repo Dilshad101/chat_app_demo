@@ -19,6 +19,9 @@ class FakeHiveService extends Fake implements HiveService {
   List<ChatMessage> getAllMessages() => [];
 
   @override
+  List<ChatMessage> getMessagesForChat(String userA, String userB) => [];
+
+  @override
   Future<void> saveMessage(ChatMessage message) async {
     stored.add(message);
   }
@@ -83,6 +86,7 @@ void main() {
         home: IndividualChatScreen(
           contactName: 'Bot',
           contactAvatar: 'a.png',
+          contactId: 1,
           webSocketService: ws,
         ),
       ),
@@ -107,6 +111,7 @@ void main() {
         home: IndividualChatScreen(
           contactName: 'Bot',
           contactAvatar: 'a.png',
+          contactId: 1,
           webSocketService: ws,
         ),
       ),
