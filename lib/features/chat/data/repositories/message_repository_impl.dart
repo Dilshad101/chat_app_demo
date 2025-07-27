@@ -27,6 +27,11 @@ class MessageRepositoryImpl implements MessageRepository {
   }
 
   @override
+  Future<void> saveMessage(ChatMessage message) async {
+    await localDataSource.cacheMessage(message);
+  }
+
+  @override
   void connect() => webSocketService.connect();
 
   @override

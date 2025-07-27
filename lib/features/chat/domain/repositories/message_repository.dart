@@ -6,6 +6,7 @@ abstract class MessageRepository {
   Stream<WsConnectionStatus> get connectionStatus;
   Future<List<ChatMessage>> getMessagesForChat(String userA, String userB);
   Future<void> sendMessage(ChatMessage message);
+  Future<void> saveMessage(ChatMessage message);
   void connect();
   void disconnect();
 }
