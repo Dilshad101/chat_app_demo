@@ -5,7 +5,9 @@ import '../../../../injection_container.dart';
 import '../bloc/bloc/fetch_all_users_bloc.dart';
 import '../widgets/chat_screen_widgets/chat_header.dart';
 import '../widgets/chat_screen_widgets/chat_list_items.widget.dart';
+import '../widgets/chat_screen_widgets/connection_status.dart';
 import 'individual_chat_screen.dart';
+import 'dart:async';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -17,12 +19,20 @@ class ChatScreen extends StatefulWidget {
 class ChatScreenState extends State<ChatScreen> {
   late WebSocketService _wsService;
   ChatItem? selectedChat;
+  late StreamSubscription<WsConnectionStatus> _connectionSubscription;
+  WsConnectionStatus _wsStatus = WsConnectionStatus.connecting;
 
   @override
   void initState() {
     super.initState();
     _wsService = locator<WebSocketService>();
     _wsService.connect();
+    _connectionSubscription = _wsService.connectionStatus.listen((status) {
+      if (!mounted) return;
+      setState(() {
+        _wsStatus = status;
+      });
+    });
   }
 
   @override
@@ -37,6 +47,10 @@ class ChatScreenState extends State<ChatScreen> {
               children: [
                 // App Header
                 const AppHeader(),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ConnectionStatus(status: _wsStatus),
+                ),
 
                 // Chat List
                 Expanded(
@@ -62,6 +76,7 @@ class ChatScreenState extends State<ChatScreen> {
                                       return IndividualChatScreen(
                                         contactName: user.name,
                                         contactAvatar: user.avatar,
+                                        contactId: user.id,
                                       );
                                     },
                                   ),
@@ -84,6 +99,13 @@ class ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _connectionSubscription.cancel();
+    _wsService.disconnect();
+    super.dispose();
   }
 }
 

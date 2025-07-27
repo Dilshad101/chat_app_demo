@@ -7,6 +7,7 @@ abstract class HiveService {
   Future<void> init();
   Future<void> saveMessage(ChatMessage message);
   List<ChatMessage> getAllMessages();
+  List<ChatMessage> getMessagesForChat(String userA, String userB);
   Future<void> clearMessages();
   Future<void> saveUser(User profile);
   User? getUser(String userId);
@@ -37,6 +38,15 @@ class HiveServiceImpl extends HiveService {
   List<ChatMessage> getAllMessages() {
     final box = Hive.box<ChatMessage>(chatBoxName);
     return box.values.toList();
+  }
+
+  @override
+  List<ChatMessage> getMessagesForChat(String userA, String userB) {
+    final box = Hive.box<ChatMessage>(chatBoxName);
+    return box.values
+        .where((m) => (m.senderId == userA && m.receiverId == userB) ||
+            (m.senderId == userB && m.receiverId == userA))
+        .toList();
   }
 
   @override
