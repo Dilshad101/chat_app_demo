@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../injection_container.dart';
+import '../../../core/local/local_storage.dart';
+import '../../data/models/chat_message.dart';
 import '../widgets/individual_chat_screen_widget/chat_app_bar.dart';
 import '../widgets/individual_chat_screen_widget/chat_input_area.dart';
 import '../widgets/individual_chat_screen_widget/chat_messages_list.dart';
@@ -23,6 +26,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<Message> _messages = [];
   int _messageCounter = 0;
+  late HiveService hiveService;
 
   final List<String> _responses = [
     "That's a great question! Let me think about that for a moment.",
@@ -37,7 +41,25 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   @override
   void initState() {
     super.initState();
+    hiveService = locator<HiveService>();
+    _loadMessages();
     _initializeChat();
+  }
+
+  void _loadMessages() {
+    final cached = hiveService.getAllMessages();
+    for (final m in cached) {
+      _messages.add(
+        Message(
+          text: m.message,
+          isSent: m.senderId == 'user',
+          time:
+              "${m.timestamp.hour}:${m.timestamp.minute.toString().padLeft(2, '0')}",
+          tickStatus: TickStatus.none,
+        ),
+      );
+    }
+    _messageCounter = _messages.where((m) => m.isSent).length;
   }
 
   void _initializeChat() {
@@ -93,6 +115,16 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
       _updateTickStatuses();
     });
 
+    hiveService.saveMessage(
+      ChatMessage(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        senderId: 'user',
+        receiverId: 'bot',
+        message: _messageController.text.trim(),
+        timestamp: DateTime.now(),
+      ),
+    );
+
     _messageController.clear();
 
     // Simulate AI response
@@ -108,6 +140,16 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
         );
         _updateTickStatuses();
       });
+
+      hiveService.saveMessage(
+        ChatMessage(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          senderId: 'bot',
+          receiverId: 'user',
+          message: _responses[DateTime.now().millisecond % _responses.length],
+          timestamp: DateTime.now(),
+        ),
+      );
     });
   }
 

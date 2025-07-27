@@ -18,11 +18,10 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   ChatRemoteDataSourceImpl({required this.client});
 
   @override
-  Future<UsersListingModel> getAllUsers() => _getTriviaFromUrl(
-    'https://mocki.io/v1/6ecdc9fe-01f5-4f6a-83a8-38e8419103be',
-  );
+  Future<UsersListingModel> getAllUsers() =>
+      _getUsersFromUrl('https://mocki.io/v1/e91cbee6-6087-455a-9d88-8c5b28805404');
 
-  Future<UsersListingModel> _getTriviaFromUrl(String url) async {
+  Future<UsersListingModel> _getUsersFromUrl(String url) async {
     final response = await client.get(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},

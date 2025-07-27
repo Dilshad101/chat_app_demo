@@ -17,7 +17,7 @@ class UsersListingModelAdapter extends TypeAdapter<UsersListingModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return UsersListingModel(
-      users: (fields[0] as List?)?.cast<User>(),
+      users: (fields[0] as List).cast<User>(),
     );
   }
 
@@ -51,9 +51,9 @@ class UserAdapter extends TypeAdapter<User> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return User(
-      name: fields[0] as String?,
-      profileImage: fields[1] as String?,
-      id: fields[2] as String,
+      name: fields[0] as String,
+      avatar: fields[1] as String,
+      id: fields[2] as int,
     );
   }
 
@@ -64,7 +64,7 @@ class UserAdapter extends TypeAdapter<User> {
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
-      ..write(obj.profileImage)
+      ..write(obj.avatar)
       ..writeByte(2)
       ..write(obj.id);
   }
@@ -86,8 +86,8 @@ class UserAdapter extends TypeAdapter<User> {
 
 UsersListingModel _$UsersListingModelFromJson(Map<String, dynamic> json) =>
     UsersListingModel(
-      users: (json['users'] as List<dynamic>?)
-          ?.map((e) => User.fromJson(e as Map<String, dynamic>))
+      users: (json['users'] as List<dynamic>)
+          .map((e) => User.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
@@ -97,13 +97,13 @@ Map<String, dynamic> _$UsersListingModelToJson(UsersListingModel instance) =>
     };
 
 User _$UserFromJson(Map<String, dynamic> json) => User(
-      name: json['name'] as String?,
-      profileImage: json['profile_image'] as String?,
-      id: json['_id'] as String,
+      name: json['name'] as String,
+      avatar: json['avatar'] as String,
+      id: json['id'] as int,
     );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'name': instance.name,
-      'profile_image': instance.profileImage,
-      '_id': instance.id,
+      'avatar': instance.avatar,
+      'id': instance.id,
     };
