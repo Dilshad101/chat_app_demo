@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/websocket_service.dart';
 import '../../../../injection_container.dart';
-import '../bloc/chat/connection_cubit.dart';
+import '../bloc/chat/connection_bloc.dart';
 import '../bloc/bloc/fetch_all_users_bloc.dart';
 import '../widgets/chat_screen_widgets/chat_header.dart';
 import '../widgets/chat_screen_widgets/chat_list_items.widget.dart';
 import '../widgets/chat_screen_widgets/connection_status.dart';
 import 'individual_chat_screen.dart';
-import 'dart:async';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -18,12 +17,12 @@ class ChatScreen extends StatefulWidget {
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  late ConnectionCubit _connectionCubit;
+  late ConnectionBloc _connectionBloc;
 
   @override
   void initState() {
     super.initState();
-    _connectionCubit = ConnectionCubit(locator<WebSocketService>());
+    _connectionBloc = ConnectionBloc(locator<WebSocketService>());
   }
 
   @override
@@ -40,9 +39,9 @@ class ChatScreenState extends State<ChatScreen> {
                 const AppHeader(),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: BlocBuilder<ConnectionCubit, WsConnectionStatus>(
-                    bloc: _connectionCubit,
-                    builder: (_, status) => ConnectionStatus(status: status),
+                  child: BlocBuilder<ConnectionBloc, ConnectionState>(
+                    bloc: _connectionBloc,
+                    builder: (_, state) => ConnectionStatus(status: state.status),
                   ),
                 ),
 
@@ -97,7 +96,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _connectionCubit.close();
+    _connectionBloc.close();
     super.dispose();
   }
 }
