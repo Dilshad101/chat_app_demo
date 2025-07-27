@@ -13,6 +13,14 @@ class FakeChatLocalDataSource implements ChatLocalDataSource {
   Future<List<ChatMessage>> getCachedMessages() async => storedMessages;
 
   @override
+  Future<List<ChatMessage>> getMessagesForChat(String userA, String userB) async {
+    return storedMessages
+        .where((m) => (m.senderId == userA && m.receiverId == userB) ||
+            (m.senderId == userB && m.receiverId == userA))
+        .toList();
+  }
+
+  @override
   Future<void> cacheUserProfile(User profile) async {}
 
   @override

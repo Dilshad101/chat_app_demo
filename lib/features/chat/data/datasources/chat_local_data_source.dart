@@ -10,6 +10,9 @@ abstract class ChatLocalDataSource {
   /// Throws [CacheException] if no cached messages exist.
   Future<List<ChatMessage>> getCachedMessages();
 
+  /// Gets all messages exchanged between [userA] and [userB].
+  Future<List<ChatMessage>> getMessagesForChat(String userA, String userB);
+
   /// Caches a single chat message.
   Future<void> cacheMessage(ChatMessage message);
 
@@ -45,6 +48,16 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
     } else {
       throw CacheException();
     }
+  }
+
+  @override
+  Future<List<ChatMessage>> getMessagesForChat(
+      String userA, String userB) async {
+    final filtered = chatBox.values
+        .where((m) => (m.senderId == userA && m.receiverId == userB) ||
+            (m.senderId == userB && m.receiverId == userA))
+        .toList();
+    return filtered;
   }
 
   @override
